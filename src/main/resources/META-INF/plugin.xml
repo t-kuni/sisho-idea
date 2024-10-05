@@ -27,4 +27,11 @@
     <extensions defaultExtensionNs="com.intellij">
 
     </extensions>
+    <actions>
+        <action id="MyPlugin.MyAction" class="com.github.tkuni.sishoidea.MyShellAction"
+                text="Run Shell Command" description="Run a shell command from IDE">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
