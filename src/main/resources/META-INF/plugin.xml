@@ -28,10 +28,11 @@
 
     </extensions>
     <actions>
-        <action id="MyPlugin.MyAction" class="com.github.tkuni.sishoidea.MyShellAction"
-                text="Run Shell Command" description="Run a shell command from IDE">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        <group id="Sisho.Group" text="Sisho" description="Sisho actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <action id="Sisho.Make" class="com.github.tkuni.sishoidea.Make" text="Make" description="Run make command"/>
+            <action id="Sisho.ChainMake" class="com.github.tkuni.sishoidea.Make" text="Chain Make" description="Run chain make command"/>
+        </group>
     </actions>
 </idea-plugin>

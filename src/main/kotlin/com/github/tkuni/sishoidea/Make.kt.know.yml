@@ -1,0 +1,7 @@
+knowledge:
+  - path: "@/src/main/resources/META-INF/plugin.xml"
+    kind: implementations
+  - path: "@/links/sisho/commands/make.md"
+    kind: implementations
+  - path: "@/links/sisho/commands/depsGraph.md"
+    kind: implementations

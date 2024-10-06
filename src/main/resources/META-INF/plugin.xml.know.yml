@@ -1,0 +1,5 @@
+knowledge:
+  - path: "@/src/main/kotlin/com/github/tkuni/sishoidea/Make.kt"
+    kind: implementations
+  - path: "@/src/main/kotlin/com/github/tkuni/sishoidea/Make.kt.md"
+    kind: specifications
