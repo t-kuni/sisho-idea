@@ -5,17 +5,17 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Sisho-idea</name>
+    <name>Sisho</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="t.kuni.dev@gmail.com" url="https://github.com/t-kuni">t-kuni</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    This plugin integrates Sisho, a code documentation tool, into IntelliJ IDEA.
+    It allows you to run Sisho commands directly from the IDE, making it easier to manage and update your code documentation.
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
