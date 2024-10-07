@@ -3,6 +3,7 @@ package com.github.tkuni.sishoidea
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -24,7 +25,10 @@ class Make : AnAction() {
         val selectedFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
         val isChainMake = event.presentation.text == "Chain Make"
 
-        val input = showMultiLineInputDialog(project)
+        val dialog = MultiLineInputDialog(project)
+        if (!dialog.showAndGet()) return
+
+        val input = dialog.getInput()
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Executing Sisho Make") {
             override fun run(indicator: ProgressIndicator) {
@@ -37,30 +41,27 @@ class Make : AnAction() {
         })
     }
 
-    private fun showMultiLineInputDialog(project: Project): String? {
-        val dialog = object : DialogWrapper(project) {
-            private val textArea = JTextArea(10, 50)
+    private class MultiLineInputDialog(project: Project) : DialogWrapper(project) {
+        private val textArea = JTextArea(10, 50)
 
-            init {
-                init()
-                title = "Enter Additional Instructions"
-            }
-
-            override fun createCenterPanel(): JComponent {
-                val panel = JPanel(BorderLayout())
-                textArea.preferredSize = Dimension(400, 200)
-                panel.add(JScrollPane(textArea), BorderLayout.CENTER)
-                return panel
-            }
-
-            fun getInput(): String = textArea.text
+        init {
+            init()
+            title = "Enter Additional Instructions"
         }
 
-        return if (dialog.showAndGet()) {
-            dialog.getInput()
-        } else {
-            null
+        override fun createCenterPanel(): JComponent {
+            val panel = JPanel(BorderLayout())
+            textArea.preferredSize = Dimension(400, 200)
+            panel.add(JScrollPane(textArea), BorderLayout.CENTER)
+            return panel
         }
+
+        override fun show() {
+            super.show()
+            textArea.requestFocusInWindow()
+        }
+
+        fun getInput(): String = textArea.text
     }
 
     private fun updateDependencyGraph(project: Project, indicator: ProgressIndicator) {
@@ -72,13 +73,12 @@ class Make : AnAction() {
         for (file in files) {
             indicator.text = "Executing make for ${file.name}"
             val relativePath = getRelativePath(project, file)
-            val command = mutableListOf(getSishoPath(), "make")
+            val command = mutableListOf(getSishoPath(), "make", "-a", "-i")
             if (isChainMake) {
                 command.add("-c")
             }
             command.add(relativePath)
-            val output = executeCommand(project, command, input)
-            showOutput(project, output)
+            executeCommandWithRealTimeOutput(project, command, input)
         }
     }
 
@@ -105,11 +105,53 @@ class Make : AnAction() {
         return output.toString()
     }
 
+    private fun executeCommandWithRealTimeOutput(project: Project, command: List<String>, input: String?) {
+        val processBuilder = ProcessBuilder(command)
+        processBuilder.directory(File(project.basePath))
+        processBuilder.redirectErrorStream(true)
+
+        val process = processBuilder.start()
+
+        ApplicationManager.getApplication().invokeLater {
+            val toolWindow = getOrCreateToolWindow(project)
+            val contentFactory = ContentFactory.SERVICE.getInstance()
+            val textArea = JTextArea()
+            textArea.isEditable = false
+            val scrollPane = JScrollPane(textArea)
+            val content = contentFactory.createContent(scrollPane, getContentTitle(command), false)  // NOTE: タブにタイトルを追加
+            toolWindow.contentManager.addContent(content)
+            toolWindow.show()
+
+            Thread {
+                if (input != null) {
+                    process.outputStream.bufferedWriter().use { it.write(input) }
+                }
+
+                BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                    reader.lines().forEach { line ->
+                        SwingUtilities.invokeLater {
+                            textArea.append(line + "\n")
+                            textArea.caretPosition = textArea.document.length
+                        }
+                    }
+                }
+                process.waitFor()
+            }.start()
+        }
+    }
+
+    // NOTE: タブのタイトルを生成する関数を追加
+    private fun getContentTitle(command: List<String>): String {
+        val action = command[1]
+        val target = command.last()
+        return "$action: $target"
+    }
+
     private fun getRelativePath(project: Project, file: VirtualFile): String {
         return File(project.basePath).toURI().relativize(File(file.path).toURI()).path
     }
 
-    private fun showOutput(project: Project, output: String) {
+    private fun getOrCreateToolWindow(project: Project): com.intellij.openapi.wm.ToolWindow {
         val toolWindowManager = ToolWindowManager.getInstance(project)
         var toolWindow = toolWindowManager.getToolWindow("Sisho Output")
 
@@ -117,14 +159,7 @@ class Make : AnAction() {
             toolWindow = toolWindowManager.registerToolWindow("Sisho Output", true, com.intellij.openapi.wm.ToolWindowAnchor.BOTTOM)
         }
 
-        val contentFactory = ContentFactory.SERVICE.getInstance()
-        val textArea = JTextArea(output)
-        textArea.isEditable = false
-        val scrollPane = JScrollPane(textArea)
-
-        val content = contentFactory.createContent(scrollPane, "", false)
-        toolWindow.contentManager.addContent(content)
-        toolWindow.show()
+        return toolWindow
     }
 
     private fun getSishoPath(): String {
