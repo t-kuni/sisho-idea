@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.ui.content.ContentFactory
 import javax.swing.*
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -114,12 +113,12 @@ class Make : AnAction() {
 
         ApplicationManager.getApplication().invokeLater {
             val toolWindow = getOrCreateToolWindow(project)
-            val contentFactory = ContentFactory.SERVICE.getInstance()
+            val contentManager = toolWindow.contentManager
             val textArea = JTextArea()
             textArea.isEditable = false
             val scrollPane = JScrollPane(textArea)
-            val content = contentFactory.createContent(scrollPane, getContentTitle(command), false)  // NOTE: タブにタイトルを追加
-            toolWindow.contentManager.addContent(content)
+            val content = contentManager.factory.createContent(scrollPane, getContentTitle(command), false)
+            contentManager.addContent(content)
             toolWindow.show()
 
             Thread {
@@ -140,7 +139,6 @@ class Make : AnAction() {
         }
     }
 
-    // NOTE: タブのタイトルを生成する関数を追加
     private fun getContentTitle(command: List<String>): String {
         val action = command[1]
         val target = command.last()

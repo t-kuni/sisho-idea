@@ -10,3 +10,6 @@
 * actionがChainMakeの場合
   * makeコマンドの前に`sisho deps-graph`コマンドで依存グラフを更新する
   * makeコマンドにcオプションを付与する
+* 以下は使用禁止
+  * ContentFactory.SERVICE
+  * createToolWindow
