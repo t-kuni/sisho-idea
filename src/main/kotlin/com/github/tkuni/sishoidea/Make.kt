@@ -162,6 +162,6 @@ class Make : AnAction() {
 
     private fun getSishoPath(): String {
         val homeDir = System.getProperty("user.home")
-        return "$homeDir/go/bin/sisho"
+        return "sisho"
     }
 }

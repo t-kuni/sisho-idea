@@ -5,3 +5,5 @@ knowledge:
     kind: implementations
   - path: "@/links/sisho/commands/depsGraph.md"
     kind: implementations
+  - path: "@/build.gradle.kts"
+    kind: implementations
